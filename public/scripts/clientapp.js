@@ -1,17 +1,17 @@
-var operation = '';
+var expression = '';
 
 $(document).ready(function() {
     $('#post-data').on('click', clickPostData);
-    //('#get-data').on('click', clickGetData);
 
     $('.operation').on('click', function(){
-        $('#operators').children().removeClass('selected');
-        $(this).addClass('selected');
-        operation = $(this).data('operation');
-        console.log(operation);
+        expression += $(this).data('operation');
+        updateDisplay();
     });
 
-    $('.number').on('click', )
+    $('.number').on('click', function(){
+        expression += $(this).data('number');
+        updateDisplay();
+    });
 
     $('#clear').on('click', clearForm);
 });
@@ -19,17 +19,7 @@ $(document).ready(function() {
 function clickPostData() {
     event.preventDefault();
     var values = {};
-    values.operation = operation;
-
-    $.each($('#post-form').serializeArray(), function(i, field) {
-        values[field.name] = field.value;
-    });
-
-    if (!values.x || !values.y || values.operation == '') {
-        $('#result').children().remove();
-        $('#result').append('<p>Please fill out all fields and select an operator</p>');
-        return;
-    }
+    values.expression = expression;
 
     $('#post-form').find('input[type=text]').val('');
 
@@ -37,23 +27,28 @@ function clickPostData() {
         type: 'POST',
         url: '/data',
         data: values,
-        beforeSend: function() {
-            console.log('before!');
-        },
         success: function(data) {
             console.log('From Server: ', data);
+            expression = '';
             $('#result').children().remove();
             $('#result').append('<p>The result is ' + data.result + '</p>');
         },
         error: function() {
-            console.log('Did not work');
+            expression = '';
+            $('#result').children().remove();
+            $('#result').append('<p>Please enter a valid expression</p>');
         }
     });
 }
 
 function clearForm(){
     $('input').val('');
-    $('#operators').children().removeClass('selected');
-    operation = '';
+    expression = '';
+    $('#display-expression').children().remove();
     $('#result').children().remove();
+}
+
+function updateDisplay(){
+    $('#display-expression').children().remove();
+    $('#display-expression').append('<p>' + expression + '</p>');
 }
